@@ -102,3 +102,19 @@ async def test_values_the_contract_refuses_ask_again():
 async def test_proposals_api_failure_raises(failure):
     with pytest.raises(Exception):  # noqa: B017 - any failure becomes "action-agent failed"
         await reply(FakeExtractor(change_pct=2), FakeProposals(failure))
+
+
+async def test_no_pricing_role_says_so():
+    failure = FakeProposals(rejected(403, "no pricing role in your token"))
+    answer = await reply(FakeExtractor(change_pct=2), failure)
+    assert answer == AgentReply(
+        answer="Your sign-in doesn't show a pricing role, so you can't draft proposals. Ask an "
+        "administrator.",
+        refusal="no_access",
+    )
+
+
+@pytest.mark.parametrize("error", ["calling app not allowed", "missing scope"])
+async def test_a_403_from_the_token_check_is_a_failure_not_a_refusal(error):
+    with pytest.raises(DraftRejected):
+        await reply(FakeExtractor(change_pct=2), FakeProposals(rejected(403, error)))

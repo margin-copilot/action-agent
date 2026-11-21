@@ -28,7 +28,7 @@ def proposal(**overrides):
 def test_a_manager_level_draft_reads_exactly():
     assert drafted(proposal()) == (
         "Drafted proposal 1a2b3c4d, pending approval: UHT milk 1 L in the North, 7.00 → 7.25 MAD "
-        "(+3.6%). The North pricing manager can approve it on the approval screen (PP-04 §3.2)."
+        "(+3.57%). The North pricing manager can approve it on the approval screen (PP-04 §3.2)."
     )
 
 
@@ -43,7 +43,7 @@ def test_a_director_level_draft_names_the_director():
     )
     assert drafted(olive) == (
         "Drafted proposal 1a2b3c4d, pending approval: Olive oil 1 L in the Center, 80.25 → 85.87 "
-        "MAD (+7.0%). Only the pricing director can approve it, on the approval screen "
+        "MAD (+7.00%). Only the pricing director can approve it, on the approval screen "
         "(PP-04 §3.2)."
     )
 
@@ -55,4 +55,4 @@ def test_the_manager_sentence_never_says_director():
 
 def test_a_cut_shows_its_sign():
     cut = proposal(new_price=Decimal("6.86"), change_pct=Decimal("-2.00"), approver="director")
-    assert "(-2.0%)" in drafted(cut)
+    assert "(-2.00%)" in drafted(cut)

@@ -70,8 +70,10 @@ async def draft_reply(question: str, extractor: Extractor, proposals: Proposals)
 
 def _refused(rejected: DraftRejected, request: DraftRequest) -> AgentReply:
     status, error = rejected.status, rejected.error
-    if status == 403:
+    if status == 403 and error.error == "region not allowed":
         return AgentReply(answer=wording.NOT_YOUR_REGION, refusal="no_access")
+    if status == 403 and error.error == "no pricing role in your token":
+        return AgentReply(answer=wording.NO_ROLE, refusal="no_access")
     if status == 404 and error.error == "no product matches":
         return AgentReply(answer=wording.NO_PRODUCT, refusal="no_data")
     if status == 404 and error.error == "no current price":
@@ -80,7 +82,9 @@ def _refused(rejected: DraftRejected, request: DraftRequest) -> AgentReply:
         return AgentReply(answer=wording.which_one(error.matches))
     if status == 422:
         return AgentReply(answer=error.error, citations=[error.clause] if error.clause else [])
-    raise rejected  # not a draft outcome: the caller gets "action-agent failed"
+    # Not a draft outcome (a token-check 403 is a misconfiguration, not the user's permission):
+    # the caller gets "action-agent failed".
+    raise rejected
 
 
 class Drafter:

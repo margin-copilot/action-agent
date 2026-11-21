@@ -10,14 +10,18 @@ NOT_A_DRAFT = (
 )
 NEED_A_CHANGE = "Tell me the new price or the percentage change."
 NOT_YOUR_REGION = "You can draft proposals only for your own region."
+NO_ROLE = (
+    "Your sign-in doesn't show a pricing role, so you can't draft proposals. Ask an administrator."
+)
 NO_PRODUCT = "No product matches that name."
 
 
 def drafted(p: Proposal) -> str:
     region = REGION_NAMES[p.region]
+    # change_pct as proposals-api rounded it: never onto a limit the exact value isn't on.
     head = (
         f"Drafted proposal {p.id[:8]}, pending approval: {p.product} in the {region}, "
-        f"{p.current_price} → {p.new_price} MAD ({p.change_pct:+.1f}%). "
+        f"{p.current_price} → {p.new_price} MAD ({p.change_pct:+.2f}%). "
     )
     if p.approver == "manager":  # never says "director", so a director-only case can't pass on it
         return (

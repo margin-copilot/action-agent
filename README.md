@@ -14,17 +14,17 @@ An A2A server (skill `drafts`), behind the shared token check. The orchestrator 
 2. **proposals-api creates the draft.** Code sends `POST /drafts` with an on-behalf-of token for the user. proposals-api reads the tier and current price itself and decides who may approve. Its reply is validated against the shared `Proposal` contract and must be `pending`.
 3. **Code writes the reply** from fixed sentences built from the stored proposal (D-038), so it can't misstate the price, the percent, the status or the approver:
 
-   > Drafted proposal 1a2b3c4d, pending approval: UHT milk 1 L in the North, 7.00 → 7.25 MAD (+3.6%). The North pricing manager can approve it on the approval screen (PP-04 §3.2).
+   > Drafted proposal 1a2b3c4d, pending approval: UHT milk 1 L in the North, 7.00 → 7.25 MAD (+3.57%). The North pricing manager can approve it on the approval screen (PP-04 §3.2).
 
 **Refusals, set by code:**
-- another region: `no_access`;
+- another region, or a sign-in with no pricing role: `no_access`;
 - an unknown product or no recorded price: `no_data`.
 
 **Other replies, with no refusal label:**
 - several matching products: it asks which one;
 - a draft over a hard cap: it quotes the rule and cites it.
 
-**Failures** reach the caller only as `action-agent failed`.
+**Failures** reach the caller only as `action-agent failed`: proposals-api errors, a 403 from its token check (a misconfiguration, not the user's permission), and a model call over its 30 s limit.
 
 ## Contract
 

@@ -37,3 +37,16 @@ async def test_no_structured_answer_fails():
     model = ScriptedChatClient([Message("assistant", ["not json"])])
     with pytest.raises(ExtractorFailed):
         await FoundryExtractor(model).extract("q")
+
+
+async def test_a_slow_model_fails_within_its_limit():
+    import asyncio
+
+    class Slow(ScriptedChatClient):
+        async def _inner_get_response(self, **kwargs):
+            await asyncio.sleep(5)
+            return await super()._inner_get_response(**kwargs)
+
+    model = Slow([intent_message(product="x", change_pct=2)])
+    with pytest.raises(ExtractorFailed):
+        await FoundryExtractor(model, limit=0.05).extract("q")

@@ -1,5 +1,6 @@
 """Extractor port adapter: one gpt-5-mini call with structured output, no tools (D-038)."""
 
+import asyncio
 from typing import Any
 
 from agent_framework import Agent
@@ -23,7 +24,10 @@ class ExtractorFailed(Exception):
 
 
 class FoundryExtractor:
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: Any, limit: float = 30) -> None:
+        # A hard limit: the model client retries on its own, and the orchestrator waits 200 s for
+        # this whole agent, proposals-api's 150 s included.
+        self._limit = limit
         self._agent = Agent(
             client=client,
             instructions=INSTRUCTIONS,
@@ -31,7 +35,11 @@ class FoundryExtractor:
         )
 
     async def extract(self, question: str) -> DraftIntent:
-        response = await self._agent.run(question)
+        try:
+            async with asyncio.timeout(self._limit):
+                response = await self._agent.run(question)
+        except TimeoutError:
+            raise ExtractorFailed("the model timed out") from None
         try:
             intent = response.value
         except ValidationError:

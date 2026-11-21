@@ -1,6 +1,6 @@
 [project]
 name = "action-agent"
-version = "0.1.1"
+version = "0.1.2"
 description = "Margin Copilot action agent: drafts pending price-change proposals through proposals-api."
 requires-python = ">=3.12,<3.13"
 dependencies = [
