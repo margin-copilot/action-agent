@@ -16,7 +16,7 @@ from action_agent.adapters.outbound.proposals_client import HttpProposals
 from action_agent.application.drafts import Drafter, FakeDrafter
 
 MODEL_TIMEOUT = 60
-PROPOSALS_TIMEOUT = 60  # proposals-api may scale from zero and wake the database
+PROPOSALS_TIMEOUT = 150  # proposals-api may scale from zero and wake the database
 
 
 def create_app() -> Starlette:

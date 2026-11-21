@@ -54,3 +54,11 @@ def test_adapters_must_be_set_explicitly(monkeypatch):
     monkeypatch.setenv("ADAPTERS", "prod")
     with pytest.raises(ValueError, match="azure or fake"):
         create_app()
+
+
+def test_the_proposals_timeout_covers_a_cold_start():
+    from action_agent.main import PROPOSALS_TIMEOUT
+
+    # proposals-api scaling from zero (~40 s) plus the free database waking up (up to ~65 s), but
+    # under the orchestrator's 200 s wait for this agent.
+    assert 120 <= PROPOSALS_TIMEOUT < 200
