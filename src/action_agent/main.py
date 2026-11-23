@@ -4,11 +4,14 @@ import os
 
 import httpx
 from agent_framework.foundry import FoundryChatClient
+from agent_framework.observability import enable_instrumentation
 from azure.identity.aio import ManagedIdentityCredential
 from margin_copilot_shared.security.obo import OboClient, managed_identity_assertion
 from margin_copilot_shared.security.tokens import entra_validator
+from margin_copilot_shared.telemetry import configure_telemetry, instrument_app
 from margin_copilot_shared.testing.issuer import LocalIssuer
 from starlette.applications import Starlette
+from starlette.types import ASGIApp
 
 from action_agent.adapters.inbound.a2a_server import create_a2a_app
 from action_agent.adapters.outbound.extractor import FoundryExtractor
@@ -19,7 +22,13 @@ MODEL_TIMEOUT = 60
 PROPOSALS_TIMEOUT = 150  # proposals-api may scale from zero and wake the database
 
 
-def create_app() -> Starlette:
+def create_app() -> ASGIApp:
+    if configure_telemetry("action-agent", os.environ):
+        enable_instrumentation(enable_sensitive_data=False)
+    return instrument_app(_app())
+
+
+def _app() -> Starlette:
     env = os.environ
     adapters = env["ADAPTERS"]
     if adapters == "azure":
